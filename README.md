@@ -50,7 +50,7 @@ A modern AI-powered desktop assistant built with React, TypeScript, and Supabase
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/yourusername/veer.git
+   git clone https://github.com/Krish948/VEER.git
    cd veer
    ```
 
