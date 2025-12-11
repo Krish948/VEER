@@ -4,7 +4,6 @@
 
 A modern AI-powered desktop assistant built with React, TypeScript, and Supabase. Features a sleek cyberpunk interface with 20+ themes including Avengers-themed designs, voice integration, and comprehensive system monitoring tools.
 
-![VEER Interface](./docs/screenshots/main-interface.png)
 
 ## ✨ Features
 
@@ -17,19 +16,6 @@ A modern AI-powered desktop assistant built with React, TypeScript, and Supabase
 - 🔒 **Secure System Agent** - Optional local service for system integration
 - 📱 **Responsive Design** - Modern glass morphism UI with smooth animations
 
-## 📸 Screenshots
-
-### Main Interface
-![VEER Main Interface](./docs/screenshots/main-interface.png)
-*The main VEER interface showing the chat panel, tool tray, and system monitoring*
-
-### Theme Gallery
-![Theme Selection](./docs/screenshots/themes.png)
-*Choose from 20+ themes including Avengers character themes*
-
-### System Monitoring
-![System Panel](./docs/screenshots/system-panel.png)
-*Real-time system monitoring with beautiful visualizations*
 
 ## Contents
 - Project info
