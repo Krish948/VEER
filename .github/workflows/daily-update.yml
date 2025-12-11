@@ -1,0 +1,22 @@
+name: Daily Data Update
+
+on:
+  # Run every day at 6:00 AM UTC
+  schedule:
+    - cron: '0 6 * * *'
+  # Allow manual trigger
+  workflow_dispatch:
+
+jobs:
+  update-daily-data:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Daily Data Update
+        run: |
+          curl -X POST \
+            "https://decpkvusmzbgdxmwmwbm.supabase.co/functions/v1/update-daily-data" \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer ${{ secrets.SUPABASE_ANON_KEY }}" \
+            -d '{"force": true}'
+        env:
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}

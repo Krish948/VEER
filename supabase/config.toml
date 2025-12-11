@@ -1,0 +1,10 @@
+project_id = "decpkvusmzbgdxmwmwbm"
+
+[functions.veer-chat]
+verify_jwt = false
+
+[functions.update-daily-data]
+verify_jwt = false
+# To schedule this function to run daily, set up a cron job in Supabase Dashboard
+# or use pg_cron extension with: SELECT cron.schedule('update-daily-data', '0 6 * * *', $$SELECT net.http_post(...)$$);
+# This will run daily at 6 AM UTC

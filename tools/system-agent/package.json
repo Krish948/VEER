@@ -1,0 +1,14 @@
+{
+  "name": "veer-system-agent",
+  "version": "0.1.0",
+  "description": "Local agent to run system commands for VEER (use with caution)",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "helmet": "^6.0.1"
+  }
+}

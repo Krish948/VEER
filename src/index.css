@@ -1,0 +1,374 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+All colors MUST be HSL.
+*/
+
+@layer base {
+  :root {
+    /* Dark Glassmorphism Theme - VEER */
+    --background: 220 25% 6%;
+    --foreground: 210 100% 95%;
+    
+    --glass-bg: 220 20% 12%;
+    --glass-border: 210 80% 50%;
+    
+    --card: 220 20% 10%;
+    --card-foreground: 210 100% 95%;
+    
+    --popover: 220 20% 12%;
+    --popover-foreground: 210 100% 95%;
+    
+    --primary: 210 100% 60%;
+    --primary-foreground: 220 25% 6%;
+    --primary-glow: 210 100% 70%;
+    
+    --secondary: 190 100% 50%;
+    --secondary-foreground: 220 25% 6%;
+    --secondary-glow: 190 100% 60%;
+    
+    --accent: 280 100% 65%;
+    --accent-foreground: 220 25% 6%;
+    --accent-glow: 280 100% 75%;
+    
+    --muted: 220 15% 20%;
+    --muted-foreground: 210 40% 65%;
+    
+    --destructive: 0 84% 55%;
+    --destructive-foreground: 210 100% 95%;
+    
+    --border: 220 20% 18%;
+    --input: 220 20% 15%;
+    --ring: 210 100% 60%;
+    
+    --radius: 0.75rem;
+    
+    --sidebar-background: 220 25% 8%;
+    --sidebar-foreground: 210 100% 90%;
+    --sidebar-primary: 210 100% 60%;
+    --sidebar-primary-foreground: 220 25% 6%;
+    --sidebar-accent: 220 20% 15%;
+    --sidebar-accent-foreground: 210 100% 90%;
+    --sidebar-border: 220 20% 18%;
+    --sidebar-ring: 210 100% 60%;
+    
+    /* Custom gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(210 100% 60%) 0%, hsl(190 100% 50%) 100%);
+    --gradient-accent: linear-gradient(135deg, hsl(280 100% 65%) 0%, hsl(210 100% 60%) 100%);
+    --gradient-glow: radial-gradient(ellipse at 50% 0%, hsl(210 100% 60% / 0.2) 0%, hsl(280 100% 65% / 0.05) 40%, transparent 70%);
+    
+    /* Shadows & Glows */
+    --shadow-glow: 0 0 20px hsl(210 100% 60% / 0.25), 0 0 40px hsl(210 100% 60% / 0.1);
+    --shadow-glow-accent: 0 0 20px hsl(280 100% 65% / 0.25), 0 0 40px hsl(280 100% 65% / 0.1);
+    --shadow-card: 0 4px 24px hsl(220 25% 0% / 0.5);
+    --shadow-lg: 0 8px 32px hsl(220 25% 0% / 0.4);
+    
+    /* Animation */
+    --transition-smooth: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-bounce: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    
+    /* Customizable properties */
+    --glass-opacity: 0.7;
+    --glow-intensity: 1;
+  }
+}
+
+/* Reduced motion for users who prefer it or have animations disabled */
+@layer base {
+  .reduce-motion,
+  .reduce-motion * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground overflow-hidden antialiased;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+  
+  /* Glassmorphism utility */
+  .glass {
+    background: hsl(var(--glass-bg) / var(--glass-opacity, 0.7));
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    border: 1px solid hsl(var(--glass-border) / 0.15);
+    box-shadow: var(--shadow-card);
+  }
+  
+  .glass-hover {
+    transition: var(--transition-smooth);
+  }
+  
+  .glass-hover:hover {
+    background: hsl(var(--glass-bg) / calc(var(--glass-opacity, 0.7) + 0.15));
+    border-color: hsl(var(--glass-border) / 0.35);
+    box-shadow: var(--shadow-glow);
+    transform: translateY(-1px);
+  }
+  
+  /* Neon glow text */
+  .neon-text {
+    color: hsl(var(--primary));
+    text-shadow: 0 0 calc(8px * var(--glow-intensity, 1)) hsl(var(--primary-glow) / 0.4),
+                 0 0 calc(16px * var(--glow-intensity, 1)) hsl(var(--primary-glow) / 0.2);
+  }
+  
+  /* Shadow utilities with glow intensity */
+  .shadow-glow {
+    box-shadow: 0 0 calc(20px * var(--glow-intensity, 1)) hsl(var(--primary) / 0.25), 
+                0 0 calc(40px * var(--glow-intensity, 1)) hsl(var(--primary) / 0.1);
+  }
+  
+  .shadow-glow-accent {
+    box-shadow: 0 0 calc(20px * var(--glow-intensity, 1)) hsl(var(--accent) / 0.25), 
+                0 0 calc(40px * var(--glow-intensity, 1)) hsl(var(--accent) / 0.1);
+  }
+  
+  /* Gradient text */
+  .gradient-text {
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Background gradient */
+  .bg-gradient-glow {
+    background: var(--gradient-glow);
+  }
+  
+  .bg-gradient-primary {
+    background: var(--gradient-primary);
+  }
+  
+  .bg-gradient-accent {
+    background: var(--gradient-accent);
+  }
+  
+  /* Smooth animations */
+  .animate-in {
+    animation-fill-mode: both;
+  }
+  
+  /* Line clamp utilities */
+  .line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  
+  .line-clamp-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  
+  /* Pulse glow animation */
+  @keyframes pulse-glow {
+    0%, 100% {
+      box-shadow: 0 0 20px hsl(var(--primary) / 0.2);
+    }
+    50% {
+      box-shadow: 0 0 40px hsl(var(--primary) / 0.4);
+    }
+  }
+  
+  .animate-pulse-glow {
+    animation: pulse-glow 2s ease-in-out infinite;
+  }
+  
+  /* Card hover lift */
+  .hover-lift {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  
+  .hover-lift:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+  }
+  
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  
+  ::-webkit-scrollbar-track {
+    background: hsl(var(--muted) / 0.2);
+    border-radius: 3px;
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    background: hsl(var(--primary) / 0.4);
+    border-radius: 3px;
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--primary) / 0.6);
+  }
+  
+  /* Focus ring */
+  *:focus-visible {
+    outline: 2px solid hsl(var(--primary) / 0.5);
+    outline-offset: 2px;
+  }
+  
+  /* Selection */
+  ::selection {
+    background: hsl(var(--primary) / 0.3);
+    color: hsl(var(--foreground));
+  }
+
+  /* Jarvis Listener Animations - Pure CSS for smooth performance */
+  
+  /* Rotating animations */
+  @keyframes jarvis-rotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+  
+  @keyframes jarvis-rotate-reverse {
+    from { transform: rotate(360deg); }
+    to { transform: rotate(0deg); }
+  }
+  
+  .jarvis-rotate {
+    animation: jarvis-rotate 12s linear infinite;
+  }
+  
+  .jarvis-rotate-reverse {
+    animation: jarvis-rotate-reverse 10s linear infinite;
+  }
+  
+  .jarvis-rotate-slow {
+    animation: jarvis-rotate 20s linear infinite;
+  }
+  
+  /* Pulsing ring animations */
+  @keyframes jarvis-pulse-ring {
+    0%, 100% {
+      transform: scale(1);
+      opacity: 0.5;
+    }
+    50% {
+      transform: scale(1.05);
+      opacity: 0.8;
+    }
+  }
+  
+  .jarvis-pulse-ring {
+    animation: jarvis-pulse-ring 2s ease-in-out infinite;
+  }
+  
+  .jarvis-pulse-ring-delayed {
+    animation: jarvis-pulse-ring 2s ease-in-out infinite;
+    animation-delay: 0.3s;
+  }
+  
+  .jarvis-pulse-ring-delayed-2 {
+    animation: jarvis-pulse-ring 2s ease-in-out infinite;
+    animation-delay: 0.6s;
+  }
+  
+  /* Core orb pulse */
+  @keyframes jarvis-core-pulse {
+    0%, 100% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.05);
+    }
+  }
+  
+  .jarvis-core-pulse {
+    animation: jarvis-core-pulse 2s ease-in-out infinite;
+    box-shadow: 
+      0 0 calc(30px * var(--glow-intensity, 1)) rgba(6, 182, 212, 0.6),
+      0 0 calc(60px * var(--glow-intensity, 1)) rgba(59, 130, 246, 0.4),
+      0 0 calc(90px * var(--glow-intensity, 1)) rgba(139, 92, 246, 0.2);
+  }
+  
+  /* Core glow animation */
+  @keyframes jarvis-core-glow {
+    0%, 100% {
+      box-shadow: 
+        0 0 calc(30px * var(--glow-intensity, 1)) rgba(6, 182, 212, 0.6),
+        0 0 calc(60px * var(--glow-intensity, 1)) rgba(59, 130, 246, 0.4);
+    }
+    50% {
+      box-shadow: 
+        0 0 calc(50px * var(--glow-intensity, 1)) rgba(6, 182, 212, 0.8),
+        0 0 calc(80px * var(--glow-intensity, 1)) rgba(59, 130, 246, 0.6);
+    }
+  }
+  
+  .jarvis-core-glow {
+    animation: jarvis-core-glow 2s ease-in-out infinite;
+  }
+  
+  /* Background glow pulse */
+  @keyframes jarvis-glow-pulse {
+    0%, 100% {
+      opacity: 0.3;
+      transform: translate(-50%, -50%) scale(1);
+    }
+    50% {
+      opacity: 0.5;
+      transform: translate(-50%, -50%) scale(1.1);
+    }
+  }
+  
+  .jarvis-glow-pulse {
+    animation: jarvis-glow-pulse 3s ease-in-out infinite;
+  }
+  
+  /* Dot pulse */
+  @keyframes jarvis-dot-pulse {
+    0%, 100% {
+      opacity: 0.6;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 1;
+      transform: scale(1.3);
+    }
+  }
+  
+  .jarvis-dot-pulse {
+    animation: jarvis-dot-pulse 1.5s ease-in-out infinite;
+  }
+  
+  /* Bounce animation for listening dots */
+  @keyframes jarvis-bounce {
+    0%, 100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-6px);
+    }
+  }
+  
+  .jarvis-bounce {
+    animation: jarvis-bounce 0.8s ease-in-out infinite;
+  }
+
+  /* Legacy animation classes for compatibility */
+  .animate-spin-slow {
+    animation: jarvis-rotate 8s linear infinite;
+  }
+
+  .animate-spin-reverse {
+    animation: jarvis-rotate-reverse 6s linear infinite;
+  }
+}
