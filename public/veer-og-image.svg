@@ -1,0 +1,64 @@
+<svg width="1200" height="630" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:hsl(220, 25%, 6%);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:hsl(220, 20%, 10%);stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="text-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:hsl(210, 100%, 60%);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:hsl(190, 100%, 50%);stop-opacity:1" />
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="8" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="1200" height="630" fill="url(#bg-gradient)"/>
+  
+  <!-- Decorative circles with glow -->
+  <circle cx="200" cy="150" r="100" fill="none" stroke="hsl(210, 100%, 60%)" stroke-width="2" opacity="0.3" filter="url(#glow)"/>
+  <circle cx="200" cy="150" r="130" fill="none" stroke="hsl(190, 100%, 50%)" stroke-width="1" opacity="0.2"/>
+  <circle cx="1000" cy="480" r="80" fill="none" stroke="hsl(280, 100%, 65%)" stroke-width="2" opacity="0.3" filter="url(#glow)"/>
+  
+  <!-- Main Title -->
+  <text x="600" y="280" font-family="Inter, system-ui, sans-serif" font-size="120" font-weight="700" text-anchor="middle" fill="url(#text-gradient)" filter="url(#glow)">
+    VEER
+  </text>
+  
+  <!-- Subtitle -->
+  <text x="600" y="340" font-family="Inter, system-ui, sans-serif" font-size="32" font-weight="400" text-anchor="middle" fill="hsl(210, 100%, 90%)" opacity="0.9">
+    Virtual Enhanced Executive Resolver
+  </text>
+  
+  <!-- Description -->
+  <text x="600" y="410" font-family="Inter, system-ui, sans-serif" font-size="24" font-weight="400" text-anchor="middle" fill="hsl(210, 40%, 65%)" opacity="0.8">
+    Your intelligent Jarvis-style AI assistant
+  </text>
+  
+  <!-- Features -->
+  <g transform="translate(300, 470)">
+    <text font-family="Inter, system-ui, sans-serif" font-size="20" fill="hsl(210, 100%, 60%)" opacity="0.9">
+      ✦ Chat
+    </text>
+  </g>
+  <g transform="translate(450, 470)">
+    <text font-family="Inter, system-ui, sans-serif" font-size="20" fill="hsl(190, 100%, 50%)" opacity="0.9">
+      ✦ Code
+    </text>
+  </g>
+  <g transform="translate(590, 470)">
+    <text font-family="Inter, system-ui, sans-serif" font-size="20" fill="hsl(280, 100%, 65%)" opacity="0.9">
+      ✦ Study
+    </text>
+  </g>
+  <g transform="translate(730, 470)">
+    <text font-family="Inter, system-ui, sans-serif" font-size="20" fill="hsl(210, 100%, 60%)" opacity="0.9">
+      ✦ Tasks
+    </text>
+  </g>
+</svg>
