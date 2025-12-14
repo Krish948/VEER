@@ -54,7 +54,7 @@ const IndexContent = () => {
       {/* Left Sidebar - Desktop: Fixed sidebar, Mobile: Drawer */}
       {isMobile ? (
         <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
-          <SheetContent side="left" className="p-0 w-[280px] sm:w-[320px]">
+          <SheetContent side="left" className="p-0 w-[85vw] max-w-[320px]">
             <Suspense fallback={<div className="w-full h-full bg-muted/50 animate-pulse" />}>
               <VeerSidebar />
             </Suspense>
@@ -71,19 +71,19 @@ const IndexContent = () => {
       )}
       
       {/* Main Chat Area - Takes remaining space */}
-      <main className="flex-1 min-w-0 relative">
+      <main className="flex-1 min-w-0 relative flex flex-col">
         {/* Toggle buttons */}
-        <div className="absolute top-4 left-4 z-10 flex gap-2">
+        <div className="absolute top-3 sm:top-4 left-3 sm:left-4 z-10 flex gap-1.5 sm:gap-2">
           {!sidebarOpen && (
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="glass h-10 w-10 shadow-lg"
+                  className="glass h-9 w-9 sm:h-10 sm:w-10 shadow-lg"
                   onClick={() => setSidebarOpen(true)}
                 >
-                  <PanelLeft className="w-5 h-5" />
+                  <PanelLeft className="w-4 h-4 sm:w-5 sm:h-5" />
                 </Button>
               </TooltipTrigger>
               <TooltipContent side="right">
@@ -92,17 +92,17 @@ const IndexContent = () => {
             </Tooltip>
           )}
         </div>
-        <div className="absolute top-4 right-4 z-10 flex gap-2">
+        <div className="absolute top-3 sm:top-4 right-3 sm:right-4 z-10 flex gap-1.5 sm:gap-2">
           {!toolPanelOpen && (
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="glass h-10 w-10 shadow-lg"
+                  className="glass h-9 w-9 sm:h-10 sm:w-10 shadow-lg"
                   onClick={() => setToolPanelOpen(true)}
                 >
-                  <PanelRight className="w-5 h-5" />
+                  <PanelRight className="w-4 h-4 sm:w-5 sm:h-5" />
                 </Button>
               </TooltipTrigger>
               <TooltipContent side="left">
@@ -123,7 +123,7 @@ const IndexContent = () => {
       {/* Right Panel - Desktop: Fixed panel, Mobile: Drawer */}
       {isMobile ? (
         <Sheet open={toolPanelOpen} onOpenChange={setToolPanelOpen}>
-          <SheetContent side="right" className="p-0 w-[320px] sm:w-[400px]">
+          <SheetContent side="right" className="p-0 w-[85vw] max-w-[400px]">
             <Suspense fallback={<div className="w-full h-full bg-muted/50 animate-pulse" />}>
               <ToolPanel />
             </Suspense>

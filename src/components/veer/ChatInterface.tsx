@@ -6,6 +6,7 @@ import { useVeer } from '@/contexts/VeerContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { toast } from 'sonner';
 import { speak, startRecognition, stopRecognition, supportsRecognition, stopSpeaking, startWakewordListening, stopWakewordListening, playWakeSound } from '@/lib/voice';
@@ -209,6 +210,7 @@ const formatBytes = (bytes: number): string => {
 };
 
 export const ChatInterface = () => {
+  const isMobile = useIsMobile();
   const [input, setInput] = useState('');
   const [isStreaming, setIsStreaming] = useState(false);
   const { messages, addMessage, currentMode, createNewSession, clearMessages } = useVeer();
@@ -1107,7 +1109,7 @@ export const ChatInterface = () => {
               )}
 
               <div
-                className={`max-w-[90%] sm:max-w-xl md:max-w-2xl px-3 sm:px-4 md:px-5 py-3 sm:py-4 shadow-lg text-sm sm:text-base ${
+                className={`max-w-[85%] sm:max-w-[75%] md:max-w-2xl px-3 sm:px-4 md:px-5 py-2.5 sm:py-3 md:py-4 shadow-lg text-sm sm:text-base ${
                   msg.role === 'user'
                     ? 'bg-gradient-primary text-primary-foreground rounded-2xl rounded-tr-md shadow-glow'
                     : 'glass border border-glass-border/30 rounded-2xl rounded-tl-md'
@@ -1164,18 +1166,18 @@ export const ChatInterface = () => {
       </ScrollArea>
 
       {/* Input Area */}
-      <footer className="relative z-10 px-4 sm:px-6 md:px-8 py-4 sm:py-5 md:py-6 glass border-t border-glass-border/20 backdrop-blur-xl">
+      <footer className="relative z-10 px-3 sm:px-6 md:px-8 py-3 sm:py-4 md:py-6 glass border-t border-glass-border/20 backdrop-blur-xl">
         <div className="max-w-4xl mx-auto">
           {/* Attached Files Display */}
           {attachedFiles.length > 0 && (
-            <div className="flex flex-wrap gap-2 mb-3 animate-in slide-in-from-bottom-2 duration-200">
+            <div className="flex flex-wrap gap-2 mb-2 sm:mb-3 animate-in slide-in-from-bottom-2 duration-200">
               {attachedFiles.map((file, index) => (
                 <div
                   key={`${file.name}-${index}`}
-                  className="flex items-center gap-2 px-3 py-2 rounded-lg glass border border-glass-border/40 group"
+                  className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg glass border border-glass-border/40 group"
                 >
-                  <FileText className="w-4 h-4 text-primary flex-shrink-0" />
-                  <span className="text-sm truncate max-w-[150px]" title={file.name}>
+                  <FileText className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary flex-shrink-0" />
+                  <span className="text-xs sm:text-sm truncate max-w-[100px] sm:max-w-[150px]" title={file.name}>
                     {file.name}
                   </span>
                   <span className="text-xs text-muted-foreground">
@@ -1194,29 +1196,29 @@ export const ChatInterface = () => {
             </div>
           )}
 
-          <div className="flex gap-3 items-center">
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
             <div className="flex-1 relative">
               <Input
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSend()}
-                placeholder={attachedFiles.length > 0 ? "Add a message about your files..." : "Ask VEER anything..."}
-                className="h-14 pl-5 pr-5 text-base glass border-glass-border/40 focus:border-primary/60 focus:shadow-glow transition-all rounded-xl"
+                placeholder={attachedFiles.length > 0 ? (isMobile ? "Message..." : "Add a message about your files...") : (isMobile ? "Ask VEER..." : "Ask VEER anything...")}
+                className="h-12 sm:h-14 pl-4 sm:pl-5 pr-4 sm:pr-5 text-sm sm:text-base glass border-glass-border/40 focus:border-primary/60 focus:shadow-glow transition-all rounded-xl"
                 disabled={isStreaming}
               />
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5 sm:gap-2 justify-between sm:justify-start">
               <Button
                 onClick={() => fileInputRef.current?.click()}
                 variant="outline"
-                size="lg"
-                className="h-14 w-14 rounded-xl glass-hover relative"
+                size={isMobile ? "default" : "lg"}
+                className="h-12 w-12 sm:h-14 sm:w-14 rounded-xl glass-hover relative"
                 title="Attach files"
                 disabled={isStreaming}
               >
-                <Paperclip className="w-5 h-5" />
+                <Paperclip className="w-4 h-4 sm:w-5 sm:h-5" />
                 {attachedFiles.length > 0 && (
-                  <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-primary text-primary-foreground text-xs flex items-center justify-center font-medium">
+                  <span className="absolute -top-1 -right-1 w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-primary text-primary-foreground text-[10px] sm:text-xs flex items-center justify-center font-medium">
                     {attachedFiles.length}
                   </span>
                 )}
@@ -1224,34 +1226,35 @@ export const ChatInterface = () => {
               <Button
                 onClick={toggleListening}
                 variant={listening ? 'destructive' : 'outline'}
-                size="lg"
-                className={`h-14 w-14 rounded-xl transition-all ${
+                size={isMobile ? "default" : "lg"}
+                className={`h-12 w-12 sm:h-14 sm:w-14 rounded-xl transition-all ${
                   listening ? 'shadow-glow animate-pulse' : 'glass-hover'
                 }`}
-                title={listening ? 'Stop listening (Ctrl+M)' : 'Start speaking (Ctrl+M)'}
+                title={listening ? 'Stop listening' : 'Start speaking'}
               >
-                {listening ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
+                {listening ? <MicOff className="w-4 h-4 sm:w-5 sm:h-5" /> : <Mic className="w-4 h-4 sm:w-5 sm:h-5" />}
               </Button>
               <Button 
                 onClick={() => { stopSpeaking(); }} 
                 variant="outline"
-                size="lg"
-                className="h-14 w-14 rounded-xl glass-hover"
+                size={isMobile ? "default" : "lg"}
+                className="h-12 w-12 sm:h-14 sm:w-14 rounded-xl glass-hover"
                 title="Stop speech"
               >
-                <Square className="w-5 h-5" />
+                <Square className="w-4 h-4 sm:w-5 sm:h-5" />
               </Button>
               <Button
                 onClick={handleSend}
                 disabled={(!input.trim() && attachedFiles.length === 0) || isStreaming}
-                size="lg"
-                className="h-14 px-6 rounded-xl bg-gradient-primary shadow-glow hover:shadow-glow-accent transition-all disabled:opacity-50"
+                size={isMobile ? "default" : "lg"}
+                className="h-12 sm:h-14 px-4 sm:px-6 rounded-xl bg-gradient-primary shadow-glow hover:shadow-glow-accent transition-all disabled:opacity-50 flex-1 sm:flex-none"
               >
-                <Send className="w-5 h-5 mr-2" />
-                <span className="font-medium">Send</span>
+                <Send className="w-4 h-4 sm:w-5 sm:h-5 mr-1.5 sm:mr-2" />
+                <span className="font-medium text-sm sm:text-base">Send</span>
               </Button>
             </div>
           </div>
+          {!isMobile && (
           <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 mt-4 text-xs text-muted-foreground">
             <span className="flex items-center gap-1.5">
               <kbd className="px-1.5 py-0.5 rounded bg-glass-bg/80 border border-glass-border/30 font-mono text-[10px]">Ctrl+B</kbd>
@@ -1294,6 +1297,7 @@ export const ChatInterface = () => {
               <span>Send</span>
             </span>
           </div>
+          )}
         </div>
       </footer>
     </div>

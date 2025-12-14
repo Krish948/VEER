@@ -371,4 +371,103 @@ All colors MUST be HSL.
   .animate-spin-reverse {
     animation: jarvis-rotate-reverse 6s linear infinite;
   }
-}
+
+  /* Mobile optimizations */
+  @media (max-width: 767px) {
+    /* Reduce font sizes on mobile for better space usage */
+    html {
+      font-size: 15px;
+    }
+
+    /* Improve touch targets */
+    button, a {
+      min-height: 44px;
+      min-width: 44px;
+    }
+
+    /* Better scrolling on mobile */
+    * {
+      -webkit-overflow-scrolling: touch;
+    }
+
+    /* Reduce animations on mobile for performance */
+    @media (prefers-reduced-motion: reduce) {
+      * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+
+    /* Optimize glassmorphism effects on mobile */
+    .glass {
+      backdrop-filter: blur(8px);
+    }
+
+    /* Reduce glow effects on mobile for performance */
+    .shadow-glow {
+      box-shadow: 0 0 15px hsla(var(--primary-glow), 0.3);
+    }
+
+    .shadow-glow-accent {
+      box-shadow: 0 0 15px hsla(var(--accent-glow), 0.3);
+    }
+
+    /* Better mobile input styling */
+    input, textarea {
+      font-size: 16px !important; /* Prevents zoom on iOS */
+    }
+
+    /* Optimize chat bubbles for mobile */
+    .max-w-\\[85\\%\\] {
+      max-width: 85%;
+    }
+
+    /* Better mobile spacing */
+    .px-3 {
+      padding-left: 0.75rem;
+      padding-right: 0.75rem;
+    }
+  }
+
+  /* Tablet optimizations */
+  @media (min-width: 768px) and (max-width: 1023px) {
+    html {
+      font-size: 15.5px;
+    }
+  }
+
+  /* Extra small screens */
+  @media (max-width: 374px) {
+    html {
+      font-size: 14px;
+    }
+
+    /* Even smaller touch targets for very small screens */
+    button:not(.h-12):not(.h-14), a {
+      min-height: 40px;
+      min-width: 40px;
+    }
+  }
+
+  /* Landscape mobile optimizations */
+  @media (max-width: 767px) and (orientation: landscape) {
+    /* Reduce vertical padding in landscape mode */
+    .py-4, .py-5, .py-6 {
+      padding-top: 0.5rem !important;
+      padding-bottom: 0.5rem !important;
+    }
+
+    /* Make better use of horizontal space */
+    .max-w-\\[85vw\\] {
+      max-width: 90vw;
+    }
+  }
+
+  /* High DPI screens */
+  @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+    /* Sharper borders on retina displays */
+    .border {
+      border-width: 0.5px;
+    }
+  }

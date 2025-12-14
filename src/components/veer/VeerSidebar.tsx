@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { useIsMobile } from '@/hooks/use-mobile';
 import WakeIndicator from './WakeIndicator';
 import { toast } from 'sonner';
 import { getCurrentLanguage, getTranslation, type Language } from '@/lib/i18n';
@@ -56,6 +57,7 @@ const tools: { id: VeerTool; label: string; description: string; icon: React.Rea
 ];
 
 export const VeerSidebar = () => {
+  const isMobile = useIsMobile();
   const { currentMode, setCurrentMode, activeTool, setActiveTool, setSidebarOpen } = useVeer();
   const [listening, setListening] = useState(false);
   const [wakeActive, setWakeActive] = useState(false);
@@ -68,7 +70,9 @@ export const VeerSidebar = () => {
   });
 
   // Sidebar expanded state with localStorage persistence
+  // On mobile, always expanded when open (in Sheet)
   const [isExpanded, setIsExpanded] = useState(() => {
+    if (isMobile) return true; // Always expanded on mobile
     try {
       const saved = localStorage.getItem('veer-sidebar-expanded');
       return saved !== null ? JSON.parse(saved) : true; // Default to expanded
@@ -178,18 +182,18 @@ export const VeerSidebar = () => {
           {/* Modes Section */}
           <div>
             {isExpanded && (
-              <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-3 px-2">
+              <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-2 sm:mb-3 px-2">
                 AI Modes
               </h3>
             )}
-            <div className={`${isExpanded ? 'space-y-1.5' : 'space-y-2 flex flex-col items-center'}`}>
+            <div className={`${isExpanded ? 'space-y-1.5 sm:space-y-2' : 'flex flex-col items-center gap-1.5 sm:gap-2'}`}>
               {modes.map((mode) => (
                 <Tooltip key={mode.id} delayDuration={300}>
                   <TooltipTrigger asChild>
                     {isExpanded ? (
                       <Button
                         variant={currentMode === mode.id ? 'default' : 'ghost'}
-                        className={`w-full justify-start gap-3 h-11 px-3 transition-all duration-200 ${
+                        className={`w-full justify-start gap-2.5 sm:gap-3 h-10 sm:h-11 px-2.5 sm:px-3 text-sm sm:text-base transition-all duration-200 ${
                           currentMode === mode.id
                             ? 'bg-gradient-primary text-primary-foreground shadow-glow'
                             : 'hover:bg-glass-bg/60 hover:border-glass-border/40'
@@ -235,18 +239,18 @@ export const VeerSidebar = () => {
           {/* Tools Section */}
           <div>
             {isExpanded && (
-              <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-3 px-2">
+              <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-2 sm:mb-3 px-2">
                 Tools & Features
               </h3>
             )}
-            <div className={`${isExpanded ? 'grid grid-cols-2 gap-2' : 'flex flex-col items-center gap-2'}`}>
+            <div className={`${isExpanded ? 'grid grid-cols-3 sm:grid-cols-2 gap-1.5 sm:gap-2' : 'flex flex-col items-center gap-1.5 sm:gap-2'}`}>
               {tools.map((tool) => (
                 <Tooltip key={tool.id} delayDuration={300}>
                   <TooltipTrigger asChild>
                     {isExpanded ? (
                       <Button
                         variant={activeTool === tool.id ? 'default' : 'ghost'}
-                        className={`flex flex-col items-center justify-center gap-1.5 h-20 p-2 transition-all duration-200 ${
+                        className={`flex flex-col items-center justify-center gap-1 sm:gap-1.5 h-16 sm:h-20 p-1.5 sm:p-2 transition-all duration-200 ${
                           activeTool === tool.id
                             ? 'bg-gradient-accent text-accent-foreground shadow-glow-accent'
                             : 'hover:bg-glass-bg/60 hover:border-glass-border/40 glass-hover'
@@ -256,12 +260,12 @@ export const VeerSidebar = () => {
                           if (activeTool === tool.id) setActiveTool('none');
                         }}
                       >
-                        <span className={`flex items-center justify-center w-8 h-8 rounded-lg ${
+                        <span className={`flex items-center justify-center w-6 h-6 sm:w-8 sm:h-8 rounded-lg ${
                           activeTool === tool.id ? 'bg-white/20' : 'bg-glass-bg/80'
                         }`}>
                           {tool.icon}
                         </span>
-                        <span className="text-xs font-medium leading-tight text-center">{tool.label}</span>
+                        <span className="text-[10px] sm:text-xs font-medium leading-tight text-center line-clamp-2">{tool.label}</span>
                       </Button>
                     ) : (
                       <Button
@@ -293,9 +297,9 @@ export const VeerSidebar = () => {
       </ScrollArea>
 
       {/* Footer with expand/collapse toggle */}
-      <div className={`${isExpanded ? 'p-4' : 'p-2'} border-t border-glass-border/20 space-y-2`}>
+      <div className={`${isExpanded ? 'p-3 sm:p-4' : 'p-2'} border-t border-glass-border/20 space-y-2`}>
         {isExpanded ? (
-          <Button variant="outline" className="w-full glass-hover h-11 gap-2">
+          <Button variant="outline" className="w-full glass-hover h-10 sm:h-11 gap-2 text-sm sm:text-base">
             <FolderKanban className="w-4 h-4" />
             <span>Projects</span>
           </Button>
@@ -310,12 +314,13 @@ export const VeerSidebar = () => {
           </Tooltip>
         )}
         
-        {/* Expand/Collapse Toggle Button */}
+        {/* Expand/Collapse Toggle Button - Hide on mobile */}
+        {!isMobile && (
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
               variant="ghost"
-              className={`${isExpanded ? 'w-full' : 'w-full'} h-9 gap-2 text-muted-foreground hover:text-foreground transition-colors`}
+              className={`${isExpanded ? 'w-full' : 'w-full'} h-9 gap-2 text-muted-foreground hover:text-foreground transition-colors text-sm`}
               onClick={toggleExpanded}
             >
               {isExpanded ? (
@@ -332,6 +337,7 @@ export const VeerSidebar = () => {
             {isExpanded ? 'Collapse sidebar' : 'Expand sidebar'}
           </TooltipContent>
         </Tooltip>
+        )}
       </div>
     </div>
   );

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useVeer } from '@/contexts/VeerContext';
 import { Calculator, Code2, FileText, Globe, GraduationCap, Calendar, FileEdit, Cloud, Newspaper, X, ExternalLink, Settings, Volume2, PanelRightClose, Palette, Music, ChevronsLeft, ChevronsRight, Timer, CheckSquare, Clipboard, ArrowLeftRight, KeyRound, QrCode, BookOpenText, Wrench, Zap, BarChart3, Lightbulb, Mail, Hash, Code, Image } from 'lucide-react';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { CalcTool } from './tools/CalcTool';
 import { NotesTool } from './tools/NotesTool';
 import { TasksTool } from './tools/TasksTool';
@@ -39,10 +40,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 export const ToolPanel = () => {
+  const isMobile = useIsMobile();
   const { activeTool, setActiveTool, setToolPanelOpen } = useVeer();
 
   // Tool panel expanded state with localStorage persistence
   const [isExpanded, setIsExpanded] = useState(() => {
+    if (isMobile) return true; // Always expanded on mobile
     try {
       const saved = localStorage.getItem('veer-toolpanel-expanded');
       return saved !== null ? JSON.parse(saved) : true; // Default to expanded
@@ -58,9 +61,9 @@ export const ToolPanel = () => {
 
   if (activeTool === 'none') {
     return (
-      <div className={`${isExpanded ? 'w-80 sm:w-96' : 'w-16'} h-screen glass border-l border-glass-border/30 flex flex-col overflow-hidden transition-all duration-300 ease-in-out`}>
+      <div className={`${isExpanded ? 'w-full sm:w-80 md:w-96' : 'w-16'} h-screen glass border-l border-glass-border/30 flex flex-col overflow-hidden transition-all duration-300 ease-in-out`}>
         {/* Header */}
-        <div className={`${isExpanded ? 'px-6 py-5' : 'p-3'} border-b border-glass-border/20 transition-all duration-300`}>
+        <div className={`${isExpanded ? 'px-4 sm:px-6 py-4 sm:py-5' : 'p-3'} border-b border-glass-border/20 transition-all duration-300`}>
           <div className="flex items-center justify-between">
             {isExpanded ? (
               <>
@@ -104,26 +107,26 @@ export const ToolPanel = () => {
 
         {isExpanded ? (
           <Tabs defaultValue="system" className="flex-1 flex flex-col overflow-hidden">
-            <div className="px-6 pt-4">
-              <TabsList className="grid grid-cols-3 w-full h-11">
-                <TabsTrigger value="system" className="gap-1.5 data-[state=active]:shadow-glow text-xs">
-                  <Globe className="w-3.5 h-3.5" />
-                  System
+            <div className="px-3 sm:px-6 pt-3 sm:pt-4">
+              <TabsList className="grid grid-cols-3 w-full h-10 sm:h-11">
+                <TabsTrigger value="system" className="gap-1 sm:gap-1.5 data-[state=active]:shadow-glow text-[10px] sm:text-xs">
+                  <Globe className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                  <span className="hidden xs:inline">System</span>
                 </TabsTrigger>
-                <TabsTrigger value="theme" className="gap-1.5 data-[state=active]:shadow-glow text-xs">
-                  <Palette className="w-3.5 h-3.5" />
-                  Theme
+                <TabsTrigger value="theme" className="gap-1 sm:gap-1.5 data-[state=active]:shadow-glow text-[10px] sm:text-xs">
+                  <Palette className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                  <span className="hidden xs:inline">Theme</span>
                 </TabsTrigger>
-                <TabsTrigger value="voice" className="gap-1.5 data-[state=active]:shadow-glow text-xs">
-                  <Volume2 className="w-3.5 h-3.5" />
-                  Voice
+                <TabsTrigger value="voice" className="gap-1 sm:gap-1.5 data-[state=active]:shadow-glow text-[10px] sm:text-xs">
+                  <Volume2 className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                  <span className="hidden xs:inline">Voice</span>
                 </TabsTrigger>
               </TabsList>
             </div>
 
             <TabsContent value="system" className="flex-1 overflow-hidden m-0">
               <ScrollArea className="h-full">
-                <div className="p-6">
+                <div className="p-3 sm:p-6">
                   <SystemPanel />
                 </div>
               </ScrollArea>
@@ -170,13 +173,14 @@ export const ToolPanel = () => {
           </div>
         )}
 
-        {/* Expand/Collapse Toggle */}
+        {/* Expand/Collapse Toggle - Hide on mobile */}
+        {!isMobile && (
         <div className="p-2 border-t border-glass-border/20">
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
                 variant="ghost"
-                className="w-full h-9 gap-2 text-muted-foreground hover:text-foreground hover:bg-glass-bg/60 transition-all"
+                className="w-full h-9 gap-2 text-muted-foreground hover:text-foreground hover:bg-glass-bg/60 transition-all text-sm"
                 onClick={toggleExpanded}
               >
                 {isExpanded ? (
@@ -194,6 +198,7 @@ export const ToolPanel = () => {
             </TooltipContent>
           </Tooltip>
         </div>
+        )}
       </div>
     );
   }
@@ -361,18 +366,18 @@ export const ToolPanel = () => {
   const header = getToolHeader();
 
   return (
-    <div className={`${isExpanded ? 'w-96' : 'w-16'} h-screen glass border-l border-glass-border/30 flex flex-col overflow-hidden transition-all duration-300 ease-in-out`}>
-      {/* Tool Header */}
-      <div className={`${isExpanded ? 'px-6 py-5' : 'p-3'} border-b border-glass-border/20 flex items-center justify-between transition-all duration-300`}>
+    <div className={`${isExpanded ? 'w-full sm:w-80 md:w-96' : 'w-16'} h-screen glass border-l border-glass-border/30 flex flex-col overflow-hidden transition-all duration-300 ease-in-out`}>
+      {/* Header */}
+      <div className={`${isExpanded ? 'px-4 sm:px-6 py-4 sm:py-5' : 'p-3'} border-b border-glass-border/20 transition-all duration-300`}>
         {isExpanded ? (
           <>
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-primary/20 flex items-center justify-center">
+            <div className="flex items-center gap-2.5 sm:gap-3">
+              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-primary/20 flex items-center justify-center flex-shrink-0">
                 {header.icon}
               </div>
-              <div>
-                <h3 className="text-lg font-semibold">{header.title}</h3>
-                <p className="text-xs text-muted-foreground">{header.desc}</p>
+              <div className="min-w-0 flex-1">
+                <h3 className="text-base sm:text-lg font-semibold truncate">{header.title}</h3>
+                <p className="text-xs text-muted-foreground truncate">{header.desc}</p>
               </div>
             </div>
             <div className="flex items-center gap-1">
@@ -446,13 +451,14 @@ export const ToolPanel = () => {
         </div>
       )}
 
-      {/* Expand/Collapse Toggle */}
+      {/* Expand/Collapse Toggle - Hide on mobile */}
+      {!isMobile && (
       <div className="p-2 border-t border-glass-border/20">
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
               variant="ghost"
-              className="w-full h-9 gap-2 text-muted-foreground hover:text-foreground hover:bg-glass-bg/60 transition-all"
+              className="w-full h-9 gap-2 text-muted-foreground hover:text-foreground hover:bg-glass-bg/60 transition-all text-sm"
               onClick={toggleExpanded}
             >
               {isExpanded ? (
@@ -470,6 +476,7 @@ export const ToolPanel = () => {
           </TooltipContent>
         </Tooltip>
       </div>
+      )}
     </div>
   );
 };
