@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { VeerMode, VeerTool, Session, Message } from '@/types/veer';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -36,7 +36,7 @@ export const VeerProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [toolPanelOpen, setToolPanelOpen] = useState(true);
 
-  const createNewSession = async () => {
+  const createNewSession = useCallback(async () => {
     const { data, error } = await supabase
       .from('sessions')
       .insert({ mode: currentMode })
@@ -50,7 +50,7 @@ export const VeerProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     setCurrentSession(data as Session);
     setMessages([]);
-  };
+  }, [currentMode]);
 
   const clearMessages = () => {
     setMessages([]);
@@ -80,7 +80,7 @@ export const VeerProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   useEffect(() => {
     createNewSession();
-  }, []);
+  }, [createNewSession]);
 
   useEffect(() => {
     if (currentSession) {

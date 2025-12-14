@@ -8,6 +8,15 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
+    /* Safe area insets for mobile devices */
+    --safe-area-inset-top: env(safe-area-inset-top, 0);
+    --safe-area-inset-right: env(safe-area-inset-right, 0);
+    --safe-area-inset-bottom: env(safe-area-inset-bottom, 0);
+    --safe-area-inset-left: env(safe-area-inset-left, 0);
+
+    /* Mobile UI Settings */
+    --base-font-size: 16px;
+
     /* Dark Glassmorphism Theme - VEER */
     --background: 220 25% 6%;
     --foreground: 210 100% 95%;
@@ -94,6 +103,41 @@ All colors MUST be HSL.
     @apply bg-background text-foreground overflow-hidden antialiased;
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   }
+
+  html, body, #root {
+    @apply w-full h-full;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  input, textarea, [contenteditable] {
+    @apply text-base;
+    -webkit-user-select: text;
+    user-select: text;
+  }
+
+  @media (max-width: 640px) {
+    body {
+      padding-bottom: calc(var(--safe-area-inset-bottom));
+    }
+  }
+
+  /* Safe area utilities for mobile notches */
+  .safe-area-top {
+    padding-top: var(--safe-area-inset-top);
+  }
+
+  .safe-area-right {
+    padding-right: var(--safe-area-inset-right);
+  }
+
+  .safe-area-bottom {
+    padding-bottom: var(--safe-area-inset-bottom);
+  }
+
+  .safe-area-left {
+    padding-left: var(--safe-area-inset-left);
+  }
   
   /* Glassmorphism utility */
   .glass {
@@ -152,6 +196,39 @@ All colors MUST be HSL.
   
   .bg-gradient-accent {
     background: var(--gradient-accent);
+  }
+
+  /* High contrast mode */
+  :root.high-contrast {
+    --background: 220 20% 4%;
+    --foreground: 210 100% 98%;
+    --glass-bg: 220 15% 10%;
+    --glass-border: 210 100% 55%;
+    --muted: 220 10% 15%;
+    --muted-foreground: 210 50% 75%;
+  }
+
+  .high-contrast .glass {
+    border: 2px solid hsl(var(--glass-border) / 0.5);
+  }
+
+  .high-contrast .glass-hover:hover {
+    border-color: hsl(var(--glass-border) / 0.75);
+  }
+
+  /* Compact mode */
+  :root.compact-mode {
+    --radius: 0.5rem;
+  }
+
+  .compact-mode .glass {
+    border-radius: calc(var(--radius));
+  }
+
+  @media (max-width: 640px) {
+    .compact-mode {
+      font-size: calc(var(--base-font-size) * 0.95);
+    }
   }
   
   /* Smooth animations */

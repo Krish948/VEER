@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { Send, Sparkles, Mic, MicOff, Volume2, Square, Upload, FileText, X, Paperclip } from 'lucide-react';
 import WakeIndicator from './WakeIndicator';
 import JarvisListener from './JarvisListener';
+import { MobileSettings } from './MobileSettings';
 import { useVeer } from '@/contexts/VeerContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,6 +14,9 @@ import { speak, startRecognition, stopRecognition, supportsRecognition, stopSpea
 import { getCurrentLanguage, getTranslation, type Language } from '@/lib/i18n';
 import { parseOpenCommand, openWebsite, openApplication, getDisplayName } from '@/lib/launcher';
 import { VeerMode } from '@/types/veer';
+import { Separator } from '@/components/ui/separator';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
 // System command types
 interface SystemCommand {
@@ -26,42 +30,42 @@ const parseSystemCommand = (message: string): SystemCommand => {
   const m = message.toLowerCase().trim();
   
   // Shutdown commands
-  if (/(shutdown|shut down|power off|turn off)(\s+(the\s+)?(computer|pc|system|machine))?/.test(m)) {
+  if (/(\bshutdown\b|\bshut\s+down\b|\bpower\s+off\b|\bturn\s+off\b)(\s+(the\s+)?(computer|pc|system|machine))?/.test(m)) {
     return { type: 'system', action: 'shutdown' };
   }
   
   // Restart commands
-  if (/(restart|reboot)(\s+(the\s+)?(computer|pc|system|machine))?/.test(m)) {
+  if (/(\brestart\b|\breboot\b)(\s+(the\s+)?(computer|pc|system|machine))?/.test(m)) {
     return { type: 'system', action: 'restart' };
   }
   
   // Lock commands
-  if (/(lock)(\s+(the\s+)?(computer|pc|system|screen|machine))?/.test(m)) {
+  if (/(\block\b)(\s+(the\s+)?(computer|pc|system|screen|machine))?/.test(m)) {
     return { type: 'system', action: 'lock' };
   }
   
   // Sleep commands
-  if (/(sleep|hibernate|suspend)(\s+(the\s+)?(computer|pc|system|machine))?|put(\s+the)?(\s+computer|\s+pc|\s+system)?\s+(to\s+)?sleep/.test(m)) {
+  if (/(\bsleep\b|\bhibernate\b|\bsuspend\b)(\s+(the\s+)?(computer|pc|system|machine))?|\bput(\s+the)?(\s+computer|\s+pc|\s+system)?\s+(to\s+)?sleep\b/.test(m)) {
     return { type: 'system', action: 'sleep' };
   }
   
   // Screenshot commands
-  if (/(take\s+a?\s*)?screenshot|capture(\s+the)?\s*screen|screen\s*capture/.test(m)) {
+  if (/(take\s+a?\s*)?\bscreenshot\b|\bcapture\b(\s+the)?\s*\bscreen\b|\bscreen\s*capture\b/.test(m)) {
     return { type: 'system', action: 'screenshot' };
   }
   
   // System info commands
-  if (/(system\s*info|show\s*(me\s+)?(the\s+)?system|what('s|\s+is)\s+(my\s+)?(system|cpu|memory|ram|disk)|how\s+much\s+(memory|ram|disk|storage)|check\s+(system|hardware))/.test(m)) {
+  if (/(\bsystem\s*info\b|\bshow\s*(me\s+)?(the\s+)?system\b|\bwhat('s|\s+is)\s+(my\s+)?(system|cpu|memory|ram|disk)\b|\bhow\s+much\s+(memory|ram|disk|storage)\b|\bcheck\s+(system|hardware)\b)/.test(m)) {
     return { type: 'system', action: 'system-info' };
   }
   
   // Process commands
-  if (/(show|list|what('s|\s+is|\s+are))(\s+me)?(\s+the)?(\s+running)?\s*(processes|apps|applications|programs)/.test(m)) {
+  if (/(\bshow\b|\blist\b|\bwhat('s|\s+is|\s+are)\b)(\s+me)?(\s+the)?(\s+running)?\s*(\bprocesses\b|\bapps\b|\bapplications\b|\bprograms\b)/.test(m)) {
     return { type: 'system', action: 'processes' };
   }
   
   // Kill process commands
-  const killMatch = m.match(/(?:kill|stop|end|terminate|close)(?:\s+the)?(?:\s+process)?\s+(.+)/);
+  const killMatch = m.match(/(?:\bkill\b|\bstop\b|\bend\b|\bterminate\b|\bclose\b)(?:\s+the)?(?:\s+process)?\s+(.+)/);
   if (killMatch) {
     return { type: 'system', action: 'kill-process', target: killMatch[1].trim() };
   }
@@ -158,6 +162,47 @@ const getProcesses = async (): Promise<{ success: boolean; processes?: Array<{ p
     return { success: false, message: 'Could not connect to system agent.' };
   }
 };
+// Main ChatInterface component (header augmentation with agent status)
+// Note: We assume ChatInterface renders a header; we inject AgentStatusBadge there.
+// Hook state for agent connectivity
+let _agentConnectedCache: boolean | null = null;
+
+const useAgentStatus = () => {
+  const [connected, setConnected] = useState<boolean>(_agentConnectedCache ?? false);
+  useEffect(() => {
+    let mounted = true;
+    const check = async () => {
+      const res = await getSystemInfo();
+      if (!mounted) return;
+      const ok = !!res.success;
+      _agentConnectedCache = ok;
+      setConnected(ok);
+    };
+    // initial check
+    check();
+    // periodic polling (every 20s)
+    const id = setInterval(check, 20000);
+    return () => {
+      mounted = false;
+      clearInterval(id);
+    };
+  }, []);
+  return connected;
+};
+
+// ---- Agent connection status UI helper ----
+const AgentStatusBadge = ({ connected }: { connected: boolean }) => (
+  <span
+    className={`inline-flex items-center gap-1 rounded px-2 py-1 text-xs ${
+      connected ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'
+    }`}
+  >
+    <span
+      className={`h-2 w-2 rounded-full ${connected ? 'bg-emerald-500' : 'bg-rose-500'}`}
+    />
+    {connected ? 'Agent: Connected' : 'Agent: Disconnected'}
+  </span>
+);
 
 // Kill a process by name
 const killProcessByName = async (processName: string): Promise<{ success: boolean; message: string }> => {
@@ -297,7 +342,7 @@ export const ChatInterface = () => {
     if (files.length > 0) {
       handleFilesSelected(files);
     }
-  }, []);
+  }, [handleFilesSelected]);
 
   const handleFilesSelected = useCallback((files: File[]) => {
     // Filter for supported file types
@@ -1023,72 +1068,146 @@ export const ChatInterface = () => {
       <div className="absolute bottom-0 left-0 right-0 h-64 bg-gradient-to-t from-background to-transparent pointer-events-none" />
 
       {/* Header */}
-      <header className="relative z-10 px-4 sm:px-6 md:px-8 py-4 sm:py-6 glass border-b border-glass-border/20 backdrop-blur-xl">
-        <div className="max-w-4xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-primary flex items-center justify-center shadow-glow">
-              <Sparkles className="w-6 h-6 text-primary-foreground animate-pulse" />
+      <header className="relative z-10 px-3 sm:px-4 md:px-6 lg:px-8 py-3 sm:py-4 md:py-6 glass border-b border-glass-border/20 backdrop-blur-xl">
+        <div className="max-w-4xl mx-auto flex items-center justify-between gap-2 sm:gap-4">
+          <div className="flex items-center gap-2 sm:gap-3 md:gap-4 flex-1 min-w-0">
+            <div className="w-10 h-10 sm:w-11 sm:h-11 md:w-12 md:h-12 rounded-2xl bg-gradient-primary flex items-center justify-center shadow-glow flex-shrink-0">
+              <Sparkles className="w-5 h-5 sm:w-6 sm:h-6 text-primary-foreground animate-pulse" />
             </div>
-            <div>
-              <h2 className="text-2xl font-bold tracking-tight">Chat with VEER</h2>
-              <div className="flex items-center gap-3 mt-1">
-                <span className="text-sm text-muted-foreground capitalize">
+            <div className="min-w-0">
+              <h2 className="text-lg sm:text-xl md:text-2xl font-bold tracking-tight truncate">Chat with VEER</h2>
+              <div className="flex items-center gap-2 mt-0.5">
+                <span className="text-xs sm:text-sm text-muted-foreground capitalize truncate">
                   Mode: <span className="text-foreground font-medium">{currentMode === 'auto' ? `Auto → ${resolvedMode || 'detecting...'}` : currentMode}</span>
                 </span>
-                <WakeIndicator
-                  listening={listening}
-                  wakeActive={wakeActive}
-                  wakeEnabled={wakeEnabled}
-                  onToggle={() => {
+                {/* Agent connection status */}
+                {(() => {
+                  const connected = useAgentStatus();
+                  const handleReconnect = async () => {
+                    const res = await getSystemInfo();
+                    if (res.success) {
+                      toast.success('System agent connected');
+                    } else {
+                      toast.error(res.message || 'System agent not reachable');
+                    }
+                  };
+                  const helpText = connected
+                    ? 'System agent is reachable.'
+                    : 'Configure .env: VITE_SYSTEM_ACTION_URL=http://localhost:4000/action and VITE_SYSTEM_ACTION_TOKEN=<secret>. Start agent in tools/system-agent with npm start.';
+                  const copyStartCmd = async () => {
                     try {
-                      const newVal = !wakeEnabled;
-                      setWakeEnabled(newVal);
-                      localStorage.setItem('veer.wake.enabled', newVal ? 'true' : 'false');
-                      const phrase = localStorage.getItem('veer.wake.phrase') || 'hey veer';
-                      try { window.dispatchEvent(new CustomEvent('veer-wake-change', { detail: { enabled: newVal, phrase } })); } catch (e) { void e; }
-                      toast(newVal ? 'Wake enabled' : 'Wake disabled');
-                    } catch (e) { void e; }
-                  }}
-                />
+                      await navigator.clipboard.writeText('cd "e:/Project/Ai Assistant/VEER/tools/system-agent"\nnpm start');
+                      toast.success('Start command copied');
+                    } catch {
+                      toast.error('Could not copy command');
+                    }
+                  };
+                  const copyAgentPath = async () => {
+                    try {
+                      await navigator.clipboard.writeText('e:/Project/Ai Assistant/VEER/tools/system-agent');
+                      toast.success('Agent path copied');
+                    } catch {
+                      toast.error('Could not copy path');
+                    }
+                  };
+                  return (
+                    <TooltipProvider delayDuration={200}>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div className="flex items-center gap-2">
+                            <AgentStatusBadge connected={connected} />
+                            <Button onClick={handleReconnect} variant="ghost" size="xs" className="h-6 px-2 text-xs">
+                              Recheck
+                            </Button>
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="xs" className="h-6 px-2 text-xs">
+                                  Agent Tools
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end" className="text-xs">
+                                <DropdownMenuItem onClick={copyStartCmd}>Copy start command</DropdownMenuItem>
+                                <DropdownMenuItem onClick={copyAgentPath}>Copy agent folder path</DropdownMenuItem>
+                                <DropdownMenuItem
+                                  onClick={() => {
+                                    try {
+                                      const url = 'https://github.com/Krish948/VEER/blob/master/tools/system-agent/README.md';
+                                      window.open(url, '_blank', 'noopener');
+                                    } catch {
+                                      toast.error('Could not open README');
+                                    }
+                                  }}
+                                >
+                                  Open agent README
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent side="bottom" className="max-w-xs text-xs">
+                          {helpText}
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  );
+                })()}
               </div>
             </div>
+          </div>
+          <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
+            <WakeIndicator
+              listening={listening}
+              wakeActive={wakeActive}
+              wakeEnabled={wakeEnabled}
+              onToggle={() => {
+                try {
+                  const newVal = !wakeEnabled;
+                  setWakeEnabled(newVal);
+                  localStorage.setItem('veer.wake.enabled', newVal ? 'true' : 'false');
+                  const phrase = localStorage.getItem('veer.wake.phrase') || 'hey veer';
+                  try { window.dispatchEvent(new CustomEvent('veer-wake-change', { detail: { enabled: newVal, phrase } })); } catch (e) { void e; }
+                  toast(newVal ? 'Wake enabled' : 'Wake disabled');
+                } catch (e) { void e; }
+              }}
+            />
+            {isMobile && <MobileSettings />}
           </div>
         </div>
       </header>
 
       {/* Messages */}
-      <ScrollArea className="flex-1 px-4 sm:px-6 md:px-8 py-4 sm:py-6 md:py-8 relative z-10" ref={scrollRef}>
-        <div className="space-y-4 sm:space-y-6 md:space-y-8 max-w-4xl mx-auto pb-4">
+      <ScrollArea className="flex-1 px-3 sm:px-4 md:px-6 lg:px-8 py-3 sm:py-4 md:py-6 lg:py-8 relative z-10" ref={scrollRef}>
+        <div className="space-y-3 sm:space-y-4 md:space-y-6 lg:space-y-8 max-w-4xl mx-auto pb-4">
           {/* Ephemeral prompt (wake word response) */}
           {ephemeralPrompt && (
-            <div className="flex gap-4 justify-start animate-in fade-in slide-in-from-left-2 duration-300">
-              <Avatar className="w-10 h-10 border-2 border-primary/50 shadow-glow flex-shrink-0">
-                <AvatarFallback className="bg-gradient-primary text-sm font-bold">V</AvatarFallback>
+            <div className="flex gap-2 sm:gap-3 md:gap-4 justify-start animate-in fade-in slide-in-from-left-2 duration-300">
+              <Avatar className="w-8 h-8 sm:w-10 sm:h-10 border-2 border-primary/50 shadow-glow flex-shrink-0">
+                <AvatarFallback className="bg-gradient-primary text-xs sm:text-sm font-bold">V</AvatarFallback>
               </Avatar>
-              <div className="max-w-[90%] sm:max-w-xl md:max-w-2xl px-3 sm:px-4 md:px-5 py-2 sm:py-3 rounded-xl sm:rounded-2xl rounded-tl-md glass border border-glass-border/30 shadow-lg text-sm sm:text-base">
-                <p className="text-sm opacity-90">{ephemeralPrompt}</p>
+              <div className="max-w-[80%] sm:max-w-[75%] md:max-w-2xl px-3 sm:px-4 md:px-5 py-2 sm:py-3 rounded-xl sm:rounded-2xl rounded-tl-md glass border border-glass-border/30 shadow-lg text-xs sm:text-sm md:text-base">
+                <p className="text-xs sm:text-sm opacity-90">{ephemeralPrompt}</p>
               </div>
             </div>
           )}
 
           {/* Welcome state */}
           {messages.length === 0 && (
-            <div className="text-center py-24 animate-in fade-in duration-500">
-              <div className="w-24 h-24 rounded-3xl bg-gradient-primary/20 flex items-center justify-center mx-auto mb-6 shadow-glow">
-                <Sparkles className="w-12 h-12 text-primary opacity-80" />
+            <div className="text-center py-12 sm:py-20 md:py-24 animate-in fade-in duration-500">
+              <div className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-2xl sm:rounded-3xl bg-gradient-primary/20 flex items-center justify-center mx-auto mb-4 sm:mb-6 shadow-glow">
+                <Sparkles className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 text-primary opacity-80" />
               </div>
-              <h3 className="text-3xl font-bold mb-3 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+              <h3 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-2 sm:mb-3 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
                 Welcome to VEER
               </h3>
-              <p className="text-muted-foreground text-lg max-w-md mx-auto">
+              <p className="text-muted-foreground text-sm sm:text-base md:text-lg max-w-xs sm:max-w-md mx-auto px-4">
                 Your AI assistant is ready. Ask me anything or use voice commands to get started.
               </p>
-              <div className="flex items-center justify-center gap-4 mt-8 text-sm text-muted-foreground">
-                <span className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-glass-bg/50 border border-glass-border/20">
-                  <Mic className="w-4 h-4" /> Press Ctrl+M to speak
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 mt-6 sm:mt-8 text-xs sm:text-sm text-muted-foreground flex-wrap">
+                <span className="flex items-center gap-2 px-2.5 sm:px-3 py-1.5 rounded-full bg-glass-bg/50 border border-glass-border/20">
+                  <Mic className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> Press Ctrl+M to speak
                 </span>
-                <span className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-glass-bg/50 border border-glass-border/20">
-                  <Sparkles className="w-4 h-4" /> Say "Hey VEER"
+                <span className="flex items-center gap-2 px-2.5 sm:px-3 py-1.5 rounded-full bg-glass-bg/50 border border-glass-border/20">
+                  <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> Say "Hey VEER"
                 </span>
               </div>
             </div>
@@ -1098,41 +1217,41 @@ export const ChatInterface = () => {
           {messages.map((msg) => (
             <div
               key={msg.id}
-              className={`flex gap-4 animate-in fade-in duration-300 ${
+              className={`flex gap-2 sm:gap-3 md:gap-4 animate-in fade-in duration-300 ${
                 msg.role === 'user' ? 'justify-end' : 'justify-start'
               }`}
             >
               {msg.role === 'assistant' && (
-                <Avatar className="w-10 h-10 border-2 border-primary/50 shadow-glow flex-shrink-0">
-                  <AvatarFallback className="bg-gradient-primary text-sm font-bold">V</AvatarFallback>
+                <Avatar className="w-8 h-8 sm:w-9 sm:h-9 md:w-10 md:h-10 border-2 border-primary/50 shadow-glow flex-shrink-0">
+                  <AvatarFallback className="bg-gradient-primary text-xs sm:text-sm font-bold">V</AvatarFallback>
                 </Avatar>
               )}
 
               <div
-                className={`max-w-[85%] sm:max-w-[75%] md:max-w-2xl px-3 sm:px-4 md:px-5 py-2.5 sm:py-3 md:py-4 shadow-lg text-sm sm:text-base ${
+                className={`max-w-[82%] sm:max-w-[75%] md:max-w-2xl px-3 sm:px-4 md:px-5 py-2 sm:py-2.5 md:py-3 shadow-lg text-xs sm:text-sm md:text-base leading-relaxed ${
                   msg.role === 'user'
-                    ? 'bg-gradient-primary text-primary-foreground rounded-2xl rounded-tr-md shadow-glow'
-                    : 'glass border border-glass-border/30 rounded-2xl rounded-tl-md'
+                    ? 'bg-gradient-primary text-primary-foreground rounded-xl sm:rounded-2xl rounded-tr-md shadow-glow'
+                    : 'glass border border-glass-border/30 rounded-xl sm:rounded-2xl rounded-tl-md'
                 }`}
               >
-                <p className="whitespace-pre-wrap leading-relaxed">{msg.content}</p>
+                <p className="whitespace-pre-wrap">{msg.content}</p>
                 
                 {msg.tool_used && msg.tool_used !== 'none' && (
-                  <div className="mt-3 pt-3 border-t border-white/10 flex items-center gap-2 text-xs opacity-70">
-                    <Sparkles className="w-3 h-3" />
+                  <div className="mt-2 sm:mt-2.5 pt-2 sm:pt-2.5 border-t border-white/10 flex items-center gap-1.5 text-[10px] sm:text-xs opacity-70">
+                    <Sparkles className="w-3 h-3 flex-shrink-0" />
                     <span>Tool: {msg.tool_used}</span>
                   </div>
                 )}
 
                 {msg.role === 'assistant' && (
-                  <div className="mt-3 pt-3 border-t border-glass-border/20 flex items-center gap-2">
+                  <div className="mt-2 sm:mt-2.5 pt-2 sm:pt-2.5 border-t border-glass-border/20 flex items-center gap-1.5">
                     <Button
                       size="sm"
                       variant="ghost"
                       onClick={() => handleSpeak(msg.content)}
-                      className="h-8 px-3 text-xs hover:bg-glass-bg/80"
+                      className="h-7 sm:h-8 px-2 sm:px-3 text-[10px] sm:text-xs hover:bg-glass-bg/80"
                     >
-                      <Volume2 className="w-3.5 h-3.5 mr-1.5" />
+                      <Volume2 className="w-3 h-3 sm:w-3.5 sm:h-3.5 mr-1" />
                       Listen
                     </Button>
                   </div>
@@ -1140,8 +1259,8 @@ export const ChatInterface = () => {
               </div>
 
               {msg.role === 'user' && (
-                <Avatar className="w-10 h-10 border-2 border-secondary/50 flex-shrink-0">
-                  <AvatarFallback className="bg-gradient-accent text-sm font-bold">U</AvatarFallback>
+                <Avatar className="w-8 h-8 sm:w-9 sm:h-9 md:w-10 md:h-10 border-2 border-secondary/50 flex-shrink-0">
+                  <AvatarFallback className="bg-gradient-accent text-xs sm:text-sm font-bold">U</AvatarFallback>
                 </Avatar>
               )}
             </div>
@@ -1149,15 +1268,15 @@ export const ChatInterface = () => {
 
           {/* Streaming indicator */}
           {isStreaming && (
-            <div className="flex gap-4 animate-in fade-in duration-300">
-              <Avatar className="w-10 h-10 border-2 border-primary/50 shadow-glow flex-shrink-0">
-                <AvatarFallback className="bg-gradient-primary text-sm font-bold">V</AvatarFallback>
+            <div className="flex gap-2 sm:gap-3 md:gap-4 animate-in fade-in duration-300">
+              <Avatar className="w-8 h-8 sm:w-9 sm:h-9 md:w-10 md:h-10 border-2 border-primary/50 shadow-glow flex-shrink-0">
+                <AvatarFallback className="bg-gradient-primary text-xs sm:text-sm font-bold">V</AvatarFallback>
               </Avatar>
-              <div className="glass border border-glass-border/30 px-6 py-4 rounded-2xl rounded-tl-md shadow-lg">
+              <div className="glass border border-glass-border/30 px-4 sm:px-5 md:px-6 py-2.5 sm:py-3 md:py-4 rounded-xl sm:rounded-2xl rounded-tl-md shadow-lg">
                 <div className="flex gap-2 items-center">
-                  <span className="w-2.5 h-2.5 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                  <span className="w-2.5 h-2.5 bg-primary rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                  <span className="w-2.5 h-2.5 bg-primary rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                  <span className="w-2 h-2 sm:w-2.5 sm:h-2.5 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                  <span className="w-2 h-2 sm:w-2.5 sm:h-2.5 bg-primary rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                  <span className="w-2 h-2 sm:w-2.5 sm:h-2.5 bg-primary rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
                 </div>
               </div>
             </div>
@@ -1166,59 +1285,73 @@ export const ChatInterface = () => {
       </ScrollArea>
 
       {/* Input Area */}
-      <footer className="relative z-10 px-3 sm:px-6 md:px-8 py-3 sm:py-4 md:py-6 glass border-t border-glass-border/20 backdrop-blur-xl">
+      <footer className="relative z-10 px-2 sm:px-4 md:px-6 lg:px-8 py-2 sm:py-3 md:py-4 lg:py-6 glass border-t border-glass-border/20 backdrop-blur-xl safe-area-bottom">
         <div className="max-w-4xl mx-auto">
           {/* Attached Files Display */}
           {attachedFiles.length > 0 && (
-            <div className="flex flex-wrap gap-2 mb-2 sm:mb-3 animate-in slide-in-from-bottom-2 duration-200">
+            <div className="flex flex-wrap gap-1.5 sm:gap-2 mb-2 sm:mb-3 animate-in slide-in-from-bottom-2 duration-200">
               {attachedFiles.map((file, index) => (
                 <div
                   key={`${file.name}-${index}`}
-                  className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg glass border border-glass-border/40 group"
+                  className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg glass border border-glass-border/40 group text-xs sm:text-sm"
                 >
-                  <FileText className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary flex-shrink-0" />
-                  <span className="text-xs sm:text-sm truncate max-w-[100px] sm:max-w-[150px]" title={file.name}>
+                  <FileText className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-primary flex-shrink-0" />
+                  <span className="truncate max-w-[60px] sm:max-w-[100px] md:max-w-[150px]" title={file.name}>
                     {file.name}
                   </span>
-                  <span className="text-xs text-muted-foreground">
+                  <span className="text-[10px] sm:text-xs text-muted-foreground hidden sm:inline">
                     ({formatBytes(file.size)})
                   </span>
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="h-5 w-5 p-0 opacity-0 group-hover:opacity-100 hover:bg-destructive/20 hover:text-destructive transition-all"
+                    className="h-4 w-4 p-0 opacity-0 group-hover:opacity-100 hover:bg-destructive/20 hover:text-destructive transition-all flex-shrink-0"
                     onClick={() => removeAttachedFile(index)}
                   >
-                    <X className="w-3 h-3" />
+                    <X className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
                   </Button>
                 </div>
               ))}
             </div>
           )}
 
-          <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
-            <div className="flex-1 relative">
-              <Input
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSend()}
-                placeholder={attachedFiles.length > 0 ? (isMobile ? "Message..." : "Add a message about your files...") : (isMobile ? "Ask VEER..." : "Ask VEER anything...")}
-                className="h-12 sm:h-14 pl-4 sm:pl-5 pr-4 sm:pr-5 text-sm sm:text-base glass border-glass-border/40 focus:border-primary/60 focus:shadow-glow transition-all rounded-xl"
-                disabled={isStreaming}
-              />
+          <div className="flex flex-col gap-2">
+            <div className="flex gap-1.5 sm:gap-2">
+              <div className="flex-1 relative">
+                <Input
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSend()}
+                  placeholder={attachedFiles.length > 0 ? (isMobile ? "Add message..." : "Add a message about your files...") : (isMobile ? "Ask VEER..." : "Ask VEER anything...")}
+                  className="h-10 sm:h-12 md:h-14 pl-3 sm:pl-4 md:pl-5 pr-3 sm:pr-4 md:pr-5 text-xs sm:text-sm md:text-base glass border-glass-border/40 focus:border-primary/60 focus:shadow-glow transition-all rounded-lg sm:rounded-xl"
+                  disabled={isStreaming}
+                />
+              </div>
+              <Button
+                onClick={handleSend}
+                disabled={(!input.trim() && attachedFiles.length === 0) || isStreaming}
+                size="sm"
+                className="h-10 sm:h-12 md:h-14 px-2 sm:px-4 md:px-6 rounded-lg sm:rounded-xl bg-gradient-primary shadow-glow hover:shadow-glow-accent transition-all disabled:opacity-50 flex-shrink-0"
+              >
+                <Send className="w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5" />
+                <span className="hidden sm:inline font-medium text-xs sm:text-sm md:text-base ml-1.5">Send</span>
+              </Button>
             </div>
-            <div className="flex items-center gap-1.5 sm:gap-2 justify-between sm:justify-start">
+
+            {/* Mobile Control Buttons */}
+            <div className="flex gap-1.5 sm:gap-2 justify-center sm:justify-start">
               <Button
                 onClick={() => fileInputRef.current?.click()}
                 variant="outline"
-                size={isMobile ? "default" : "lg"}
-                className="h-12 w-12 sm:h-14 sm:w-14 rounded-xl glass-hover relative"
-                title="Attach files"
+                size="sm"
+                className="h-9 sm:h-10 md:h-11 px-2.5 sm:px-3 md:px-4 text-xs sm:text-sm rounded-lg sm:rounded-xl glass-hover relative flex-shrink-0"
+                title="Attach files (Ctrl+U)"
                 disabled={isStreaming}
               >
-                <Paperclip className="w-4 h-4 sm:w-5 sm:h-5" />
+                <Paperclip className="w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5" />
+                <span className="hidden sm:inline ml-1.5">Files</span>
                 {attachedFiles.length > 0 && (
-                  <span className="absolute -top-1 -right-1 w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-primary text-primary-foreground text-[10px] sm:text-xs flex items-center justify-center font-medium">
+                  <span className="absolute -top-1 -right-1 sm:top-1 sm:right-1 w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-primary text-primary-foreground text-[9px] sm:text-xs flex items-center justify-center font-medium">
                     {attachedFiles.length}
                   </span>
                 )}
@@ -1226,77 +1359,71 @@ export const ChatInterface = () => {
               <Button
                 onClick={toggleListening}
                 variant={listening ? 'destructive' : 'outline'}
-                size={isMobile ? "default" : "lg"}
-                className={`h-12 w-12 sm:h-14 sm:w-14 rounded-xl transition-all ${
+                size="sm"
+                className={`h-9 sm:h-10 md:h-11 px-2.5 sm:px-3 md:px-4 text-xs sm:text-sm rounded-lg sm:rounded-xl transition-all flex-shrink-0 ${
                   listening ? 'shadow-glow animate-pulse' : 'glass-hover'
                 }`}
-                title={listening ? 'Stop listening' : 'Start speaking'}
+                title={listening ? 'Stop listening (Ctrl+M)' : 'Start speaking (Ctrl+M)'}
               >
-                {listening ? <MicOff className="w-4 h-4 sm:w-5 sm:h-5" /> : <Mic className="w-4 h-4 sm:w-5 sm:h-5" />}
+                {listening ? <MicOff className="w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5" /> : <Mic className="w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5" />}
+                <span className="hidden sm:inline ml-1.5">{listening ? 'Stop' : 'Mic'}</span>
               </Button>
               <Button 
                 onClick={() => { stopSpeaking(); }} 
                 variant="outline"
-                size={isMobile ? "default" : "lg"}
-                className="h-12 w-12 sm:h-14 sm:w-14 rounded-xl glass-hover"
+                size="sm"
+                className="h-9 sm:h-10 md:h-11 px-2.5 sm:px-3 md:px-4 text-xs sm:text-sm rounded-lg sm:rounded-xl glass-hover flex-shrink-0"
                 title="Stop speech"
               >
-                <Square className="w-4 h-4 sm:w-5 sm:h-5" />
-              </Button>
-              <Button
-                onClick={handleSend}
-                disabled={(!input.trim() && attachedFiles.length === 0) || isStreaming}
-                size={isMobile ? "default" : "lg"}
-                className="h-12 sm:h-14 px-4 sm:px-6 rounded-xl bg-gradient-primary shadow-glow hover:shadow-glow-accent transition-all disabled:opacity-50 flex-1 sm:flex-none"
-              >
-                <Send className="w-4 h-4 sm:w-5 sm:h-5 mr-1.5 sm:mr-2" />
-                <span className="font-medium text-sm sm:text-base">Send</span>
+                <Square className="w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5" />
+                <span className="hidden sm:inline ml-1.5">Stop</span>
               </Button>
             </div>
           </div>
+
           {!isMobile && (
-          <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 mt-4 text-xs text-muted-foreground">
-            <span className="flex items-center gap-1.5">
-              <kbd className="px-1.5 py-0.5 rounded bg-glass-bg/80 border border-glass-border/30 font-mono text-[10px]">Ctrl+B</kbd>
-              <span>Sidebar</span>
-            </span>
-            <span className="flex items-center gap-1.5">
-              <kbd className="px-1.5 py-0.5 rounded bg-glass-bg/80 border border-glass-border/30 font-mono text-[10px]">Ctrl+.</kbd>
-              <span>Tools</span>
-            </span>
-            <span className="flex items-center gap-1.5">
-              <kbd className="px-1.5 py-0.5 rounded bg-glass-bg/80 border border-glass-border/30 font-mono text-[10px]">Ctrl+M</kbd>
-              <span>Mic</span>
-            </span>
-            <span className="flex items-center gap-1.5">
-              <kbd className="px-1.5 py-0.5 rounded bg-glass-bg/80 border border-glass-border/30 font-mono text-[10px]">Ctrl+W</kbd>
-              <span>Wake</span>
-            </span>
-            <span className="flex items-center gap-1.5">
-              <kbd className="px-1.5 py-0.5 rounded bg-glass-bg/80 border border-glass-border/30 font-mono text-[10px]">Ctrl+U</kbd>
-              <span>Attach</span>
-            </span>
-            <span className="flex items-center gap-1.5">
-              <kbd className="px-1.5 py-0.5 rounded bg-glass-bg/80 border border-glass-border/30 font-mono text-[10px]">Ctrl+L</kbd>
-              <span>Replay</span>
-            </span>
-            <span className="flex items-center gap-1.5">
-              <kbd className="px-1.5 py-0.5 rounded bg-glass-bg/80 border border-glass-border/30 font-mono text-[10px]">Ctrl+Shift+N</kbd>
-              <span>New Chat</span>
-            </span>
-            <span className="flex items-center gap-1.5">
-              <kbd className="px-1.5 py-0.5 rounded bg-glass-bg/80 border border-glass-border/30 font-mono text-[10px]">Ctrl+Shift+L</kbd>
-              <span>Clear</span>
-            </span>
-            <span className="flex items-center gap-1.5">
-              <kbd className="px-1.5 py-0.5 rounded bg-glass-bg/80 border border-glass-border/30 font-mono text-[10px]">Drop</kbd>
-              <span>Files</span>
-            </span>
-            <span className="flex items-center gap-1.5">
-              <kbd className="px-1.5 py-0.5 rounded bg-glass-bg/80 border border-glass-border/30 font-mono text-[10px]">Enter</kbd>
-              <span>Send</span>
-            </span>
-          </div>
+            <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 mt-4 text-xs text-muted-foreground">
+              <span className="flex items-center gap-1.5">
+                <kbd className="px-1.5 py-0.5 rounded bg-glass-bg/80 border border-glass-border/30 font-mono text-[10px]">Ctrl+B</kbd>
+                <span>Sidebar</span>
+              </span>
+              <span className="flex items-center gap-1.5">
+                <kbd className="px-1.5 py-0.5 rounded bg-glass-bg/80 border border-glass-border/30 font-mono text-[10px]">Ctrl+.</kbd>
+                <span>Tools</span>
+              </span>
+              <span className="flex items-center gap-1.5">
+                <kbd className="px-1.5 py-0.5 rounded bg-glass-bg/80 border border-glass-border/30 font-mono text-[10px]">Ctrl+M</kbd>
+                <span>Mic</span>
+              </span>
+              <span className="flex items-center gap-1.5">
+                <kbd className="px-1.5 py-0.5 rounded bg-glass-bg/80 border border-glass-border/30 font-mono text-[10px]">Ctrl+W</kbd>
+                <span>Wake</span>
+              </span>
+              <span className="flex items-center gap-1.5">
+                <kbd className="px-1.5 py-0.5 rounded bg-glass-bg/80 border border-glass-border/30 font-mono text-[10px]">Ctrl+U</kbd>
+                <span>Attach</span>
+              </span>
+              <span className="flex items-center gap-1.5">
+                <kbd className="px-1.5 py-0.5 rounded bg-glass-bg/80 border border-glass-border/30 font-mono text-[10px]">Ctrl+L</kbd>
+                <span>Replay</span>
+              </span>
+              <span className="flex items-center gap-1.5">
+                <kbd className="px-1.5 py-0.5 rounded bg-glass-bg/80 border border-glass-border/30 font-mono text-[10px]">Ctrl+Shift+N</kbd>
+                <span>New Chat</span>
+              </span>
+              <span className="flex items-center gap-1.5">
+                <kbd className="px-1.5 py-0.5 rounded bg-glass-bg/80 border border-glass-border/30 font-mono text-[10px]">Ctrl+Shift+L</kbd>
+                <span>Clear</span>
+              </span>
+              <span className="flex items-center gap-1.5">
+                <kbd className="px-1.5 py-0.5 rounded bg-glass-bg/80 border border-glass-border/30 font-mono text-[10px]">Drop</kbd>
+                <span>Files</span>
+              </span>
+              <span className="flex items-center gap-1.5">
+                <kbd className="px-1.5 py-0.5 rounded bg-glass-bg/80 border border-glass-border/30 font-mono text-[10px]">Enter</kbd>
+                <span>Send</span>
+              </span>
+            </div>
           )}
         </div>
       </footer>
