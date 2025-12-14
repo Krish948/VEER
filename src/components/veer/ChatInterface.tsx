@@ -1021,7 +1021,7 @@ export const ChatInterface = () => {
       <div className="absolute bottom-0 left-0 right-0 h-64 bg-gradient-to-t from-background to-transparent pointer-events-none" />
 
       {/* Header */}
-      <header className="relative z-10 px-8 py-6 glass border-b border-glass-border/20 backdrop-blur-xl">
+      <header className="relative z-10 px-4 sm:px-6 md:px-8 py-4 sm:py-6 glass border-b border-glass-border/20 backdrop-blur-xl">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 rounded-2xl bg-gradient-primary flex items-center justify-center shadow-glow">
@@ -1055,15 +1055,15 @@ export const ChatInterface = () => {
       </header>
 
       {/* Messages */}
-      <ScrollArea className="flex-1 px-8 py-8 relative z-10" ref={scrollRef}>
-        <div className="space-y-8 max-w-4xl mx-auto pb-4">
+      <ScrollArea className="flex-1 px-4 sm:px-6 md:px-8 py-4 sm:py-6 md:py-8 relative z-10" ref={scrollRef}>
+        <div className="space-y-4 sm:space-y-6 md:space-y-8 max-w-4xl mx-auto pb-4">
           {/* Ephemeral prompt (wake word response) */}
           {ephemeralPrompt && (
             <div className="flex gap-4 justify-start animate-in fade-in slide-in-from-left-2 duration-300">
               <Avatar className="w-10 h-10 border-2 border-primary/50 shadow-glow flex-shrink-0">
                 <AvatarFallback className="bg-gradient-primary text-sm font-bold">V</AvatarFallback>
               </Avatar>
-              <div className="max-w-2xl px-5 py-3 rounded-2xl rounded-tl-md glass border border-glass-border/30 shadow-lg">
+              <div className="max-w-[90%] sm:max-w-xl md:max-w-2xl px-3 sm:px-4 md:px-5 py-2 sm:py-3 rounded-xl sm:rounded-2xl rounded-tl-md glass border border-glass-border/30 shadow-lg text-sm sm:text-base">
                 <p className="text-sm opacity-90">{ephemeralPrompt}</p>
               </div>
             </div>
@@ -1107,7 +1107,7 @@ export const ChatInterface = () => {
               )}
 
               <div
-                className={`max-w-2xl px-5 py-4 shadow-lg ${
+                className={`max-w-[90%] sm:max-w-xl md:max-w-2xl px-3 sm:px-4 md:px-5 py-3 sm:py-4 shadow-lg text-sm sm:text-base ${
                   msg.role === 'user'
                     ? 'bg-gradient-primary text-primary-foreground rounded-2xl rounded-tr-md shadow-glow'
                     : 'glass border border-glass-border/30 rounded-2xl rounded-tl-md'
@@ -1164,7 +1164,7 @@ export const ChatInterface = () => {
       </ScrollArea>
 
       {/* Input Area */}
-      <footer className="relative z-10 px-8 py-6 glass border-t border-glass-border/20 backdrop-blur-xl">
+      <footer className="relative z-10 px-4 sm:px-6 md:px-8 py-4 sm:py-5 md:py-6 glass border-t border-glass-border/20 backdrop-blur-xl">
         <div className="max-w-4xl mx-auto">
           {/* Attached Files Display */}
           {attachedFiles.length > 0 && (

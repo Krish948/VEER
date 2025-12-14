@@ -119,7 +119,7 @@ export const VeerSidebar = () => {
   }, []);
 
   return (
-    <div className={`${isExpanded ? 'w-72' : 'w-16'} h-screen glass border-r border-glass-border/30 flex flex-col transition-all duration-300 ease-in-out`}>
+    <div className={`${isExpanded ? 'w-64 sm:w-72' : 'w-16'} h-screen glass border-r border-glass-border/30 flex flex-col transition-all duration-300 ease-in-out`}>
       {/* Header / Logo */}
       <div className={`${isExpanded ? 'p-6' : 'p-3'} border-b border-glass-border/20 transition-all duration-300`}>
         <div className="flex items-center justify-between mb-2">

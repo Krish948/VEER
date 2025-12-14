@@ -3,6 +3,8 @@ import { VeerProvider, useVeer } from '@/contexts/VeerContext';
 import { Button } from '@/components/ui/button';
 import { PanelLeft, PanelRight } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { Sheet, SheetContent } from '@/components/ui/sheet';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 // Lazy load heavy components
 const VeerSidebar = lazy(() => import('@/components/veer/VeerSidebar').then(m => ({ default: m.VeerSidebar })));
@@ -11,6 +13,7 @@ const ToolPanel = lazy(() => import('@/components/veer/ToolPanel').then(m => ({ 
 
 const IndexContent = () => {
   const { sidebarOpen, setSidebarOpen, toolPanelOpen, setToolPanelOpen } = useVeer();
+  const isMobile = useIsMobile();
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -48,13 +51,23 @@ const IndexContent = () => {
 
   return (
     <div className="flex h-screen w-full overflow-hidden bg-background">
-      {/* Left Sidebar - Navigation & Modes */}
-      {sidebarOpen && (
-        <aside className="flex-shrink-0">
-          <Suspense fallback={<div className="w-80 h-full bg-muted/50 animate-pulse" />}>
-            <VeerSidebar />
-          </Suspense>
-        </aside>
+      {/* Left Sidebar - Desktop: Fixed sidebar, Mobile: Drawer */}
+      {isMobile ? (
+        <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
+          <SheetContent side="left" className="p-0 w-[280px] sm:w-[320px]">
+            <Suspense fallback={<div className="w-full h-full bg-muted/50 animate-pulse" />}>
+              <VeerSidebar />
+            </Suspense>
+          </SheetContent>
+        </Sheet>
+      ) : (
+        sidebarOpen && (
+          <aside className="flex-shrink-0">
+            <Suspense fallback={<div className="w-80 h-full bg-muted/50 animate-pulse" />}>
+              <VeerSidebar />
+            </Suspense>
+          </aside>
+        )
       )}
       
       {/* Main Chat Area - Takes remaining space */}
@@ -74,7 +87,7 @@ const IndexContent = () => {
                 </Button>
               </TooltipTrigger>
               <TooltipContent side="right">
-                <p>Open sidebar <kbd className="ml-2 px-1.5 py-0.5 rounded bg-muted text-[10px]">Ctrl+B</kbd></p>
+                <p>Open sidebar {!isMobile && <kbd className="ml-2 px-1.5 py-0.5 rounded bg-muted text-[10px]">Ctrl+B</kbd>}</p>
               </TooltipContent>
             </Tooltip>
           )}
@@ -93,7 +106,7 @@ const IndexContent = () => {
                 </Button>
               </TooltipTrigger>
               <TooltipContent side="left">
-                <p>Open tools <kbd className="ml-2 px-1.5 py-0.5 rounded bg-muted text-[10px]">Ctrl+.</kbd></p>
+                <p>Open tools {!isMobile && <kbd className="ml-2 px-1.5 py-0.5 rounded bg-muted text-[10px]">Ctrl+.</kbd>}</p>
               </TooltipContent>
             </Tooltip>
           )}
@@ -107,13 +120,23 @@ const IndexContent = () => {
         </Suspense>
       </main>
       
-      {/* Right Panel - Tools & Settings */}
-      {toolPanelOpen && (
-        <aside className="flex-shrink-0">
-          <Suspense fallback={<div className="w-96 h-full bg-muted/50 animate-pulse" />}>
-            <ToolPanel />
-          </Suspense>
-        </aside>
+      {/* Right Panel - Desktop: Fixed panel, Mobile: Drawer */}
+      {isMobile ? (
+        <Sheet open={toolPanelOpen} onOpenChange={setToolPanelOpen}>
+          <SheetContent side="right" className="p-0 w-[320px] sm:w-[400px]">
+            <Suspense fallback={<div className="w-full h-full bg-muted/50 animate-pulse" />}>
+              <ToolPanel />
+            </Suspense>
+          </SheetContent>
+        </Sheet>
+      ) : (
+        toolPanelOpen && (
+          <aside className="flex-shrink-0">
+            <Suspense fallback={<div className="w-96 h-full bg-muted/50 animate-pulse" />}>
+              <ToolPanel />
+            </Suspense>
+          </aside>
+        )
       )}
     </div>
   );

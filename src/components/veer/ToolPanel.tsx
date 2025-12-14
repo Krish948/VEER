@@ -58,7 +58,7 @@ export const ToolPanel = () => {
 
   if (activeTool === 'none') {
     return (
-      <div className={`${isExpanded ? 'w-96' : 'w-16'} h-screen glass border-l border-glass-border/30 flex flex-col overflow-hidden transition-all duration-300 ease-in-out`}>
+      <div className={`${isExpanded ? 'w-80 sm:w-96' : 'w-16'} h-screen glass border-l border-glass-border/30 flex flex-col overflow-hidden transition-all duration-300 ease-in-out`}>
         {/* Header */}
         <div className={`${isExpanded ? 'px-6 py-5' : 'p-3'} border-b border-glass-border/20 transition-all duration-300`}>
           <div className="flex items-center justify-between">
