@@ -1,11 +1,13 @@
-import { useEffect } from 'react';
+import { useEffect, lazy, Suspense } from 'react';
 import { VeerProvider, useVeer } from '@/contexts/VeerContext';
-import { VeerSidebar } from '@/components/veer/VeerSidebar';
-import { ChatInterface } from '@/components/veer/ChatInterface';
-import { ToolPanel } from '@/components/veer/ToolPanel';
 import { Button } from '@/components/ui/button';
 import { PanelLeft, PanelRight } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+
+// Lazy load heavy components
+const VeerSidebar = lazy(() => import('@/components/veer/VeerSidebar').then(m => ({ default: m.VeerSidebar })));
+const ChatInterface = lazy(() => import('@/components/veer/ChatInterface').then(m => ({ default: m.ChatInterface })));
+const ToolPanel = lazy(() => import('@/components/veer/ToolPanel').then(m => ({ default: m.ToolPanel })));
 
 const IndexContent = () => {
   const { sidebarOpen, setSidebarOpen, toolPanelOpen, setToolPanelOpen } = useVeer();
@@ -49,7 +51,9 @@ const IndexContent = () => {
       {/* Left Sidebar - Navigation & Modes */}
       {sidebarOpen && (
         <aside className="flex-shrink-0">
-          <VeerSidebar />
+          <Suspense fallback={<div className="w-80 h-full bg-muted/50 animate-pulse" />}>
+            <VeerSidebar />
+          </Suspense>
         </aside>
       )}
       
@@ -94,13 +98,21 @@ const IndexContent = () => {
             </Tooltip>
           )}
         </div>
-        <ChatInterface />
+        <Suspense fallback={
+          <div className="flex items-center justify-center h-full">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+          </div>
+        }>
+          <ChatInterface />
+        </Suspense>
       </main>
       
       {/* Right Panel - Tools & Settings */}
       {toolPanelOpen && (
         <aside className="flex-shrink-0">
-          <ToolPanel />
+          <Suspense fallback={<div className="w-96 h-full bg-muted/50 animate-pulse" />}>
+            <ToolPanel />
+          </Suspense>
         </aside>
       )}
     </div>
