@@ -316,3 +316,11 @@ Notes
 - Via Lovable: open the project and Share -> Publish.
 - Custom domain: Project > Settings > Domains > Connect Domain (Lovable).
 - Static hosting: run `npm run build` then serve `dist/` with any static host.
+
+### Deploy to Vercel (recommended)
+- Repo connect: push to GitHub/GitLab/Bitbucket, then Vercel -> New Project -> import; framework auto-detect: Vite.
+- Build config: Build command `npm run build`; Output directory `dist`.
+- SPA routing: add `vercel.json` with a rewrite from `/(.*)` to `/` so client routes work (already included in this repo after setup).
+- Environment variables (Project Settings -> Environment Variables): set `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`, `VITE_SUPABASE_PROJECT_ID`, and any optional keys (OpenAI, WEATHER_API_KEY, NEWS_API_KEY, VITE_SYSTEM_ACTION_*). Do not commit real secrets.
+- Preview locally before first deploy: `npm install`, `npm run build`, then `npm run preview`.
+- Custom domain (optional): Vercel -> Settings -> Domains -> Add; set DNS CNAME to Vercel target.
