@@ -31,7 +31,6 @@ A modern AI-powered desktop assistant built with React, TypeScript, and Supabase
 - Deployment
 
 ## Project info
-- URL: https://lovable.dev/projects/ea037c04-3443-41fa-8c71-a8b09e66da2f
 - Stack: Vite, TypeScript, React, shadcn-ui, Tailwind CSS, React Router, TanStack Query, Supabase
 
 ## Prerequisites
